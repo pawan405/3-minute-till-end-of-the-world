@@ -1,0 +1,47 @@
+# Unity generated folders
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# Unity cache
+MemoryCaptures/
+Recordings/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+.vscode/
+
+# Generated solution/project files
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Crash reports
+sysinfo.txt
+
+# Build artifacts
+*.apk
+*.aab
+*.unitypackage
+
+# Addressables
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/[Bb]uild[Ll]ayout*
+
+# JetBrains Rider
+.idea/
+
+# Visual Studio Code
+.vscode/
