@@ -43,8 +43,10 @@ namespace ithappy.Creative_Characters_FREE.Controller
         private Vector3 m_Target;
         private bool m_IsRun;
         private bool m_IsJump;
+        public bool canMove = true;
 
         private bool m_IsMoving;
+        private bool m_IsGrabbing;
 
         public Vector2 Axis => m_Axis;
         public Vector3 Target => m_Target;
@@ -52,12 +54,19 @@ namespace ithappy.Creative_Characters_FREE.Controller
 
         private void OnValidate()
         {
+            if (!canMove)
+            {
+                return;
+            }
             m_WalkSpeed = Mathf.Max(m_WalkSpeed, 0f);
             m_RunSpeed = Mathf.Max(m_RunSpeed, m_WalkSpeed);
 
             m_Movement?.SetStats(m_WalkSpeed / 3.6f, m_RunSpeed / 3.6f, m_RotateSpeed, m_JumpHeight, m_Space);
         }
-
+        public void FinishGrab()
+        {
+            m_IsGrabbing = false;
+        }
         private void Awake()
         {
             m_Transform = transform;
@@ -70,9 +79,36 @@ namespace ithappy.Creative_Characters_FREE.Controller
 
         private void Update()
         {
-            m_Movement.Move(Time.deltaTime, in m_Axis, in m_Target, m_IsRun, m_IsJump, m_IsMoving, out var animAxis, out var isAir);
-            m_Animation.Animate(in animAxis, m_IsRun? 1f : 0f, isAir, Time.deltaTime);
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                m_IsGrabbing = true;
 
+                m_Axis = Vector2.zero;
+                m_IsMoving = false;
+
+                m_Animator.SetTrigger("Grab");
+            }
+
+            if (!m_IsGrabbing)
+            {
+                m_Movement.Move(
+                    Time.deltaTime,
+                    in m_Axis,
+                    in m_Target,
+                    m_IsRun,
+                    m_IsJump,
+                    m_IsMoving,
+                    out var animAxis,
+                    out var isAir
+                );
+
+                m_Animation.Animate(
+                    in animAxis,
+                    m_IsRun ? 1f : 0f,
+                    isAir,
+                    Time.deltaTime
+                );
+            }
         }
 
         private void OnAnimatorIK()
