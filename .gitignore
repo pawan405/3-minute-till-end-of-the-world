@@ -37,6 +37,8 @@ sysinfo.txt
 *.aab
 *.unitypackage
 
+*.exr
+
 # Addressables
 /[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/[Bb]uild[Ll]ayout*
 
