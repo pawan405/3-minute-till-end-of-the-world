@@ -10,6 +10,8 @@ public class WirePuzzleManager : MonoBehaviour
     private GameObject currentWire;// which wire we are currently dragging 
     private RectTransform currentWireRect;// access to wire's rect transform
     private RectTransform currentSourceRect;
+    public GeneratorController generatorController;
+    private int connectedWires = 0;
     public bool isDragging; // tels if the wire is being dragged
 
     public void StartWire(WireSource source)
@@ -49,8 +51,14 @@ public class WirePuzzleManager : MonoBehaviour
 
     public void UpdateWire(Vector2 mousePosition)
     {
-        Vector2 startPosition = wireContainer.InverseTransformPoint(
+        Vector2 sourceCenter = wireContainer.InverseTransformPoint(
             currentSourceRect.position
+        );
+
+        // Move the starting point to the right edge of the source.
+        Vector2 startPosition = sourceCenter + new Vector2(
+            currentSourceRect.rect.width / 2f,
+            0f
         );
 
         Vector2 mouseLocalPosition;
@@ -62,7 +70,48 @@ public class WirePuzzleManager : MonoBehaviour
             out mouseLocalPosition
         );
 
-        Vector2 direction = mouseLocalPosition - startPosition;
+        SetWireBetween(startPosition, mouseLocalPosition);
+    }
+
+    //public void UpdateWire(Vector2 mousePosition)
+    //{
+    //    Vector2 startPosition = wireContainer.InverseTransformPoint(
+    //        currentSourceRect.position
+    //    );
+
+    //    Vector2 mouseLocalPosition;
+
+    //    RectTransformUtility.ScreenPointToLocalPointInRectangle(
+    //        wireContainer,
+    //        mousePosition,
+    //        null,
+    //        out mouseLocalPosition
+    //    );
+
+    //    Vector2 direction = mouseLocalPosition - startPosition;
+
+    //    currentWireRect.anchoredPosition = startPosition;
+
+    //    currentWireRect.sizeDelta = new Vector2(
+    //        direction.magnitude,
+    //        10f
+    //    );
+
+    //    float angle = Mathf.Atan2(
+    //        direction.y,
+    //        direction.x
+    //    ) * Mathf.Rad2Deg;
+
+    //    currentWireRect.localRotation = Quaternion.Euler(
+    //        0f,
+    //        0f,
+    //        angle
+    //    );
+    //}
+
+    private void SetWireBetween(Vector2 startPosition, Vector2 endPosition)
+    {
+        Vector2 direction = endPosition - startPosition;
 
         currentWireRect.anchoredPosition = startPosition;
 
@@ -82,7 +131,6 @@ public class WirePuzzleManager : MonoBehaviour
             angle
         );
     }
-
     public void EndWire(Vector2 mousePosition)
     {
         PointerEventData pointerData = new PointerEventData(EventSystem.current);
@@ -110,12 +158,49 @@ public class WirePuzzleManager : MonoBehaviour
         {
             WireSource source = currentSourceRect.GetComponent<WireSource>();
 
+            //if (target.wireColor == source.wireColor)
+            //{
+            //    correctConnection = true;
+            //    source.SetConnected();
+
+            //    Debug.Log("CORRECT CONNECTION!");
+            //}
             if (target.wireColor == source.wireColor)
             {
                 correctConnection = true;
+
+                Vector2 sourceCenter = wireContainer.InverseTransformPoint(
+                    currentSourceRect.position
+                );
+
+                Vector2 targetCenter = wireContainer.InverseTransformPoint(
+                    target.GetComponent<RectTransform>().position
+                );
+
+                Vector2 startPosition = sourceCenter + new Vector2(
+                    currentSourceRect.rect.width / 2f,
+                    0f
+                );
+
+                Vector2 endPosition = targetCenter - new Vector2(
+                    target.GetComponent<RectTransform>().rect.width / 2f,
+                    0f
+                );
+
+                SetWireBetween(startPosition, endPosition);
+
                 source.SetConnected();
 
+                connectedWires++;
+
                 Debug.Log("CORRECT CONNECTION!");
+
+                if (connectedWires == 4)
+                {
+                    Debug.Log("ALL WIRES CONNECTED - POWER RESTORED!");
+
+                    generatorController.PuzzleCompleted();
+                }
             }
             else
             {

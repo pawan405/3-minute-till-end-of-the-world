@@ -14,6 +14,7 @@ public class GeneratorInteraction : MonoBehaviour
 
     private bool playerNearby = false;
     private bool panelOpen = false;
+    private bool powerRestored = false;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -23,8 +24,19 @@ public class GeneratorInteraction : MonoBehaviour
         if (generatorPuzzle.PuzzleSolved)
             return;
 
+        if (!powerRestored)
+            return;
+
         playerNearby = true;
         generatorPrompt.SetActive(true);
+        //if (!other.CompareTag("Player"))
+        //    return;
+
+        //if (generatorPuzzle.PuzzleSolved)
+        //    return;
+
+        //playerNearby = true;
+        //generatorPrompt.SetActive(true);
     }
     private void OnTriggerExit(Collider other)
     {
@@ -103,6 +115,18 @@ public class GeneratorInteraction : MonoBehaviour
 
                 generatorPrompt.SetActive(true);
             }
+        }
+
+    }
+    public void PowerRestored()
+    {
+        powerRestored = true;
+
+        Debug.Log("Generator power restored!");
+
+        if (playerNearby && !panelOpen && !generatorPuzzle.PuzzleSolved)
+        {
+            generatorPrompt.SetActive(true);
         }
     }
 }
