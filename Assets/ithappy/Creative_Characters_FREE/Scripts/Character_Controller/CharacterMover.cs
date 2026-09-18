@@ -63,10 +63,24 @@ namespace ithappy.Creative_Characters_FREE.Controller
 
             m_Movement?.SetStats(m_WalkSpeed / 3.6f, m_RunSpeed / 3.6f, m_RotateSpeed, m_JumpHeight, m_Space);
         }
+        public void StartGrab()
+        {
+            if (m_IsGrabbing)
+            {
+                return;
+            }
+
+            m_IsGrabbing = true;
+            m_Axis = Vector2.zero;
+            m_IsMoving = false;
+            m_Animator.SetTrigger("Grab");
+        }
+
         public void FinishGrab()
         {
             m_IsGrabbing = false;
         }
+
         private void Awake()
         {
             m_Transform = transform;
@@ -74,21 +88,11 @@ namespace ithappy.Creative_Characters_FREE.Controller
             m_Animator = GetComponent<Animator>();
 
             m_Movement = new MovementHandler(m_Controller, m_Transform, m_WalkSpeed, m_RunSpeed, m_RotateSpeed, m_JumpHeight, m_Space);
-            m_Animation = new AnimationHandler(m_Animator, m_HorizontalID,  m_VerticalID, m_StateID, m_JumpID);
+            m_Animation = new AnimationHandler(m_Animator, m_HorizontalID, m_VerticalID, m_StateID, m_JumpID);
         }
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                m_IsGrabbing = true;
-
-                m_Axis = Vector2.zero;
-                m_IsMoving = false;
-
-                m_Animator.SetTrigger("Grab");
-            }
-
             if (!m_IsGrabbing)
             {
                 m_Movement.Move(
