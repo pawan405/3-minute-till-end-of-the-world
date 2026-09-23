@@ -37,6 +37,7 @@ public sealed class RocketController2D : MonoBehaviour
     [SerializeField, Min(0.05f)] private float fireCooldown = DefaultFireCooldown;
     [SerializeField, Min(0.1f)] private float projectileSpeed = DefaultProjectileSpeed;
     [SerializeField, Min(0.1f)] private float projectileLifetime = DefaultProjectileLifetime;
+    [SerializeField] private bool automaticFire = true;
 
     [Header("Health")]
     [SerializeField, Min(1)] private int maxHealth = DefaultMaxHealth;
@@ -65,6 +66,17 @@ public sealed class RocketController2D : MonoBehaviour
     private void Update()
     {
         AnimateFlight();
+        if (Keyboard.current == null && !automaticFire)
+        {
+            moveInput = Vector2.zero;
+            return;
+        }
+
+        if (automaticFire && controlEnabled)
+        {
+            TryFireProjectile();
+        }
+
         if (Keyboard.current == null)
         {
             moveInput = Vector2.zero;

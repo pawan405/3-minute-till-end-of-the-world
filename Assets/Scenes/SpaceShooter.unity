@@ -403,6 +403,7 @@ GameObject:
   m_Component:
   - component: {fileID: 363232715}
   - component: {fileID: 363232716}
+  - component: {fileID: 363232717}
   m_Layer: 0
   m_Name: SpaceShooterRoot
   m_TagString: Untagged
@@ -466,6 +467,23 @@ MonoBehaviour:
   planetScale: 1.45
   statusText: {fileID: 627159077}
   healthText: {fileID: 1698853691}
+--- !u!114 &363232717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 363232714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4fe55fba1e6f4943b4b12501506a05e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GalaxyStarfield
+  starCount: 110
+  starDepth: 0.4
+  minimumSize: 0.02
+  maximumSize: 0.06
+  starColor: {r: 0.65, g: 0.9, b: 1, a: 0.85}
 --- !u!1 &507562423
 GameObject:
   m_ObjectHideFlags: 0
@@ -1233,7 +1251,10 @@ MonoBehaviour:
 
 
     THE ORBITAL
-    ROUTE IS CLEAR'
+    ROUTE IS CLEAR
+
+
+    LEVEL 4 CHIP ACQUIRED'
   nextLevelButtonLabel: NEXT LEVEL
 --- !u!1001 &1571754401
 PrefabInstance:
@@ -1421,6 +1442,7 @@ MonoBehaviour:
   fireCooldown: 0.22
   projectileSpeed: 14
   projectileLifetime: 3
+  automaticFire: 1
   maxHealth: 3
 --- !u!1 &1619702071
 GameObject:

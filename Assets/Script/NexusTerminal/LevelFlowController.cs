@@ -144,7 +144,23 @@ public sealed class LevelFlowController : MonoBehaviour
     }
 
     /// <summary>
-    /// Starts the launch presentation only when reactor authorization is valid.
+    /// Starts the launch sequence directly from the nearby launch interaction.
+    /// </summary>
+    public void BeginAutomaticLaunch()
+    {
+        if (currentState == LevelState.LAUNCHING || currentState == LevelState.SPACE_SHOOTER || currentState == LevelState.COMPLETE)
+        {
+            return;
+        }
+
+        reactorFileAccessed = true;
+        reactorAuthorizationAccepted = true;
+        currentState = LevelState.LAUNCH_READY;
+        BeginLaunch();
+    }
+
+    /// <summary>
+    /// Starts the launch presentation after launch authorization is satisfied.
     /// </summary>
     public void BeginLaunch()
     {
@@ -184,6 +200,7 @@ public sealed class LevelFlowController : MonoBehaviour
         }
 
         currentState = LevelState.COMPLETE;
+        ChipProgress.UnlockLevel4Chip();
         if (levelTransition != null)
         {
             levelTransition.ShowEscapeSuccess();
