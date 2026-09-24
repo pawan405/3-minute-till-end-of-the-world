@@ -1,6 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [DisallowMultipleComponent]
@@ -46,6 +47,7 @@ public sealed class TerminalController : MonoBehaviour
     private bool commandInProgress;
     private Coroutine terminalRoutine;
     private Coroutine signalRoutine;
+    private Coroutine passwordFocusRoutine;
     private Image[] signalBars = System.Array.Empty<Image>();
     private bool signalAcquisitionComplete;
 
@@ -72,21 +74,77 @@ public sealed class TerminalController : MonoBehaviour
     private void OnEnable()
     {
         ResetSession();
+        FocusPasswordInput();
     }
 
     private void Start()
     {
-        ResetSession();
+        FocusPasswordInput();
+    }
 
-        if (focusPasswordOnStart && passwordInput != null)
+    /// <summary>
+    /// Selects and activates the password field when the terminal opens.
+    /// </summary>
+    public void FocusPasswordInput()
+    {
+        if (!focusPasswordOnStart || passwordInput == null || passwordPanel == null || !passwordPanel.activeInHierarchy)
         {
+            return;
+        }
+
+        passwordInput.interactable = true;
+        passwordInput.gameObject.SetActive(true);
+        EventSystem.current?.SetSelectedGameObject(passwordInput.gameObject);
+        passwordInput.Select();
+        passwordInput.ActivateInputField();
+
+        if (passwordFocusRoutine != null)
+        {
+            StopCoroutine(passwordFocusRoutine);
+        }
+
+        passwordFocusRoutine = StartCoroutine(FocusPasswordInputNextFrame());
+    }
+
+    private IEnumerator FocusPasswordInputNextFrame()
+    {
+        yield return null;
+
+        if (passwordInput != null && passwordPanel != null && passwordPanel.activeInHierarchy)
+        {
+            EventSystem.current?.SetSelectedGameObject(passwordInput.gameObject);
             passwordInput.Select();
             passwordInput.ActivateInputField();
+        }
+
+        passwordFocusRoutine = null;
+    }
+
+    /// <summary>
+    /// Hides terminal authentication and command panels before the automatic launch cinematic.
+    /// </summary>
+    public void PrepareForAutomaticLaunch()
+    {
+        if (passwordPanel != null)
+        {
+            passwordPanel.SetActive(false);
+        }
+
+        if (terminalPanel != null)
+        {
+            terminalPanel.SetActive(false);
+        }
+
+        if (terminalUI != null)
+        {
+            terminalUI.SetCommandInputEnabled(false);
         }
     }
 
     private void ResetSession()
     {
+
+
         authenticated = false;
         commandInProgress = false;
         signalAcquisitionComplete = false;

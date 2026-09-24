@@ -71,13 +71,30 @@ public sealed class NexusTerminalInteraction : MonoBehaviour
             return;
         }
 
+        SetPromptVisible(false);
+
         if (autoLaunchOnInteract && levelFlow != null)
         {
-            SetPromptVisible(false);
+            SetTerminalVisible(true);
+
+            TerminalController automaticTerminalController = terminalRoot.GetComponent<TerminalController>();
+            if (automaticTerminalController != null)
+            {
+                automaticTerminalController.PrepareForAutomaticLaunch();
+            }
+
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             levelFlow.BeginAutomaticLaunch();
             return;
+        }
+
+        SetTerminalVisible(true);
+
+        TerminalController terminalController = terminalRoot.GetComponent<TerminalController>();
+        if (terminalController != null)
+        {
+            terminalController.FocusPasswordInput();
         }
 
         Cursor.lockState = CursorLockMode.None;
