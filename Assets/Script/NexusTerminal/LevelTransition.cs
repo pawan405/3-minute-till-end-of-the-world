@@ -7,7 +7,7 @@ public sealed class LevelTransition : MonoBehaviour
 {
     private const string DefaultSpaceScenePath = "Assets/Scenes/SpaceShooter.unity";
     private const string DefaultFailureMessage = "NEXUS-01 / ESCAPE ATTEMPT TERMINATED";
-    private const string DefaultSuccessMessage = "NEXUS-01\n\nESCAPE TRAJECTORY CONFIRMED\n\nTHE ORBITAL ROUTE IS CLEAR";
+    private const string DefaultSuccessMessage = "NEXUS-01\n\nESCAPE TRAJECTORY CONFIRMED\n\nTHE ORBITAL ROUTE IS CLEAR\n\nLEVEL 4 CHIP ACQUIRED";
     private const string DefaultNextLevelButtonLabel = "NEXT LEVEL";
 
     [Header("Scene Names")]

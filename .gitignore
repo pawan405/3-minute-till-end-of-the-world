@@ -50,3 +50,8 @@ sysinfo.txt
 
 # Visual Studio Code
 .vscode/
+
+# Meta files for ignored/generated assets
+*.exr.meta
+*.unitypackage.meta
+*.exr

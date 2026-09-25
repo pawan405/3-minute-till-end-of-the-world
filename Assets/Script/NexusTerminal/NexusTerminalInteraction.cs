@@ -10,8 +10,10 @@ public sealed class NexusTerminalInteraction : MonoBehaviour
     [SerializeField] private GameObject interactionPromptBackdrop;
     [SerializeField] private string interactionKeyLabel = "E";
 
-    [Header("Interaction")]
     [SerializeField] private KeyCode interactionKey = KeyCode.E;
+    [SerializeField] private LevelFlowController levelFlow;
+    [SerializeField] private bool autoLaunchOnInteract = true;
+
     [SerializeField] private KeyCode closeKey = KeyCode.Escape;
     [SerializeField] private string playerTag = "Player";
     [SerializeField] private bool hideCursorWhenClosed = true;
@@ -69,8 +71,32 @@ public sealed class NexusTerminalInteraction : MonoBehaviour
             return;
         }
 
-        terminalRoot.SetActive(true);
         SetPromptVisible(false);
+
+        if (autoLaunchOnInteract && levelFlow != null)
+        {
+            SetTerminalVisible(true);
+
+            TerminalController automaticTerminalController = terminalRoot.GetComponent<TerminalController>();
+            if (automaticTerminalController != null)
+            {
+                automaticTerminalController.PrepareForAutomaticLaunch();
+            }
+
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            levelFlow.BeginAutomaticLaunch();
+            return;
+        }
+
+        SetTerminalVisible(true);
+
+        TerminalController terminalController = terminalRoot.GetComponent<TerminalController>();
+        if (terminalController != null)
+        {
+            terminalController.FocusPasswordInput();
+        }
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
@@ -118,7 +144,7 @@ public sealed class NexusTerminalInteraction : MonoBehaviour
         }
 
         interactionPrompt.text = visible
-            ? $"PRESS [ {interactionKeyLabel} ] TO ACCESS NEXUS TERMINAL"
+            ? (autoLaunchOnInteract ? $"PRESS [ {interactionKeyLabel} ] TO LAUNCH NEXUS-01" : $"PRESS [ {interactionKeyLabel} ] TO ACCESS NEXUS TERMINAL")
             : string.Empty;
         interactionPrompt.gameObject.SetActive(visible);
     }

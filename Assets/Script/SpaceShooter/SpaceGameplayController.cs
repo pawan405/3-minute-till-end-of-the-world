@@ -33,6 +33,7 @@ public sealed class SpaceGameplayController : MonoBehaviour
     private const string BossExposedMessage = "CORE EXPOSED\n\nKEEP FIRING THROUGH THE GAPS\nSPACE: FIRE";
     private const int DefaultStarCount = 55;
     private const float DefaultPlanetScale = 1.45f;
+    private const float DefaultAutomaticStrikeInterval = 0.55f;
     private const string SpaceBackdropName = "SpaceBackdrop";
     private const string UnlitShaderName = "Universal Render Pipeline/Unlit";
 
@@ -66,6 +67,10 @@ public sealed class SpaceGameplayController : MonoBehaviour
     [SerializeField, Min(0.1f)] private float bossApproachDuration = DefaultBossApproachDuration;
     [SerializeField, Min(0.1f)] private float escapeDuration = DefaultEscapeDuration;
 
+    [Header("Automatic Encounter")]
+    [SerializeField] private bool automaticEncounter = true;
+    [SerializeField, Min(0.1f)] private float automaticStrikeInterval = DefaultAutomaticStrikeInterval;
+
     [Header("Space Presentation")]
     [SerializeField, Min(0)] private int starCount = DefaultStarCount;
     [SerializeField, Min(0.1f)] private float planetScale = DefaultPlanetScale;
@@ -77,6 +82,7 @@ public sealed class SpaceGameplayController : MonoBehaviour
     private BigAsteroid bigAsteroid;
     private EncounterState encounterState;
     private Coroutine encounterRoutine;
+    private Coroutine automaticDestructionRoutine;
     private Vector3 rocketStartPosition;
     private int rocketHealth = DefaultRocketHealth;
     private int remainingGateBlockers;
@@ -173,6 +179,12 @@ public sealed class SpaceGameplayController : MonoBehaviour
             return;
         }
 
+        if (automaticDestructionRoutine != null)
+        {
+            StopCoroutine(automaticDestructionRoutine);
+            automaticDestructionRoutine = null;
+        }
+
         encounterState = EncounterState.Victory;
         if (asteroidSpawner != null)
         {
@@ -246,10 +258,20 @@ public sealed class SpaceGameplayController : MonoBehaviour
         SetStatus(CriticalObjectMessage);
         yield return new WaitForSecondsRealtime(warningDuration);
         yield return StartCoroutine(ApproachBossRoutine());
-        CreateGateBlockers();
+        if (automaticEncounter)
+        {
+            remainingGateBlockers = 0;
+            bigAsteroid.SetVulnerable(true);
+            SetStatus("AUTO TARGET LOCKED\n\nNEXUS-01 WEAPONS ARMED");
+            automaticDestructionRoutine = StartCoroutine(AutomaticDestructionRoutine());
+        }
+        else
+        {
+            CreateGateBlockers();
+            SetStatus(GateBlockedMessage);
+            UpdateHealthText("BIG ASTEROID + SHIELD", DefaultBossHealth, DefaultBossHealth);
+        }
 
-        SetStatus(GateBlockedMessage);
-        UpdateHealthText("BIG ASTEROID + SHIELD", DefaultBossHealth, DefaultBossHealth);
         encounterState = EncounterState.Combat;
         if (rocket != null)
         {
@@ -259,11 +281,32 @@ public sealed class SpaceGameplayController : MonoBehaviour
 
         if (asteroidSpawner != null)
         {
-            asteroidSpawner.BeginSpawning();
+            if (automaticEncounter)
+            {
+                asteroidSpawner.StopSpawning();
+            }
+            else
+            {
+                asteroidSpawner.BeginSpawning();
+            }
         }
 
         encounterRoutine = null;
     }
+
+    private IEnumerator AutomaticDestructionRoutine()
+    {
+        yield return new WaitForSecondsRealtime(0.8f);
+
+        while (encounterState == EncounterState.Combat && bigAsteroid != null && bigAsteroid.CurrentHealth > 0)
+        {
+            bigAsteroid.TakeDamage(1);
+            yield return new WaitForSecondsRealtime(automaticStrikeInterval);
+        }
+
+        automaticDestructionRoutine = null;
+    }
+
 
     private IEnumerator ApproachBossRoutine()
     {
@@ -336,7 +379,7 @@ public sealed class SpaceGameplayController : MonoBehaviour
         }
 
         bigAsteroid = bossObject.GetComponent<BigAsteroid>();
-        bigAsteroid.Initialize(this, playCamera, bigAsteroidVisualPrefab, smallExplosionPrefab, finalExplosionPrefab, rocket != null ? rocket.transform : null);
+        bigAsteroid.Initialize(this, playCamera, bigAsteroidVisualPrefab, smallExplosionPrefab, finalExplosionPrefab, rocket != null ? rocket.transform : null, !automaticEncounter);
         UpdateHealthText("BIG ASTEROID", bigAsteroid.CurrentHealth, bigAsteroid.MaxHealth);
     }
 

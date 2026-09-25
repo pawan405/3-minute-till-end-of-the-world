@@ -55,6 +55,12 @@ public class GeneratorController : MonoBehaviour
         Debug.Log("=== PUZZLE COMPLETED CALLED ===");
 
         puzzleSolved = true;
+        // Give Level 1 rewards
+        if (CollectibleManager.Instance != null)
+        {
+            CollectibleManager.Instance.GiveLevel1Reward();
+        }
+
 
         // Close puzzle
         if (powerPuzzle != null)

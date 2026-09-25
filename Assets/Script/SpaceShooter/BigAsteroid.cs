@@ -37,6 +37,7 @@ public sealed class BigAsteroid : MonoBehaviour
     private bool initialized;
     private bool destroyed;
     private bool vulnerable;
+    private bool spawnFragments = true;
 
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
@@ -56,11 +57,12 @@ public sealed class BigAsteroid : MonoBehaviour
     /// <summary>
     /// Connects the boss asteroid to the space encounter and initializes its health.
     /// </summary>
-    public void Initialize(SpaceGameplayController controller, Camera camera, GameObject fragmentVisual, GameObject smallExplosion, GameObject finalExplosion, Transform rocketTransform = null)
+    public void Initialize(SpaceGameplayController controller, Camera camera, GameObject fragmentVisual, GameObject smallExplosion, GameObject finalExplosion, Transform rocketTransform = null, bool createFragments = true)
     {
         gameplayController = controller;
         playCamera = camera;
         targetRocket = rocketTransform;
+        spawnFragments = createFragments;
         fragmentVisualPrefab = fragmentVisual;
         smallExplosionPrefab = smallExplosion;
         finalExplosionPrefab = finalExplosion;
@@ -107,7 +109,10 @@ public sealed class BigAsteroid : MonoBehaviour
 
         currentHealth = Mathf.Max(0, currentHealth - Mathf.Max(1, damage));
         nextDamageTime = Time.time + 0.2f;
-        SpawnFragments();
+        if (spawnFragments)
+        {
+            SpawnFragments();
+        }
 
         if (gameplayController != null)
         {

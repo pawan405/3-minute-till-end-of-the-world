@@ -58,21 +58,12 @@ public sealed class TorchInteraction : MonoBehaviour
 
     private void Update()
     {
-        if (!playerInRange || isGrabAnimating || !Input.GetKeyDown(KeyCode.E))
+        if (!playerInRange || isGrabAnimating || isGrabbed || !Input.GetKeyDown(KeyCode.E))
         {
             return;
         }
 
-        if (!isGrabbed)
-        {
-            BeginGrab();
-            return;
-        }
-
-        if (!isTorchOn)
-        {
-            TurnOnTorch();
-        }
+        BeginGrab();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -151,13 +142,28 @@ public sealed class TorchInteraction : MonoBehaviour
         transform.localPosition = handLocalPosition;
         transform.localRotation = Quaternion.Euler(handLocalRotation);
         transform.localScale = handLocalScale;
+
+        if (torchController != null && torchController.glowParticle != null)
+        {
+            Transform glowTransform = torchController.glowParticle.transform;
+            glowTransform.SetParent(transform, false);
+            glowTransform.localPosition = new Vector3(0f, 0.25f, 0f);
+            glowTransform.localRotation = Quaternion.identity;
+            glowTransform.localScale = Vector3.one;
+        }
+
         character.FinishGrab();
+
+        if (torchController != null && !isTorchOn)
+        {
+            torchController.ToggleTorch();
+            isTorchOn = true;
+        }
 
         interactionCollider.enabled = false;
         isGrabbed = true;
         isGrabAnimating = false;
-        SetPromptVisible(true);
-        SetPromptText("PRESS [ " + interactionKeyLabel + " ] TO TURN ON TORCH");
+        SetPromptVisible(false);
     }
 
     private void TurnOnTorch()
