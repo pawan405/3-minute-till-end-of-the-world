@@ -2,6 +2,7 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 [DisallowMultipleComponent]
 public sealed class SpaceGameplayController : MonoBehaviour
@@ -35,7 +36,18 @@ public sealed class SpaceGameplayController : MonoBehaviour
     private const float DefaultPlanetScale = 1.45f;
     private const float DefaultAutomaticStrikeInterval = 0.55f;
     private const string SpaceBackdropName = "SpaceBackdrop";
+    private const string VictoryCanvasName = "AsteroidVictoryCanvas";
+    private const string VictoryMessage = "Wohooo! you win";
     private const string UnlitShaderName = "Universal Render Pipeline/Unlit";
+    private const int VictoryCanvasSortingOrder = 100;
+    private const float VictoryCanvasReferenceWidth = 1920f;
+    private const float VictoryCanvasReferenceHeight = 1080f;
+    private const float VictoryCanvasScaleMatch = 0.5f;
+    private const float VictoryPanelWidth = 1040f;
+    private const float VictoryPanelHeight = 250f;
+    private const float VictoryMessageFontSize = 76f;
+    private static readonly Color VictoryPanelColor = new Color(0.008f, 0.025f, 0.055f, 0.92f);
+    private static readonly Color VictoryMessageColor = new Color(0.34f, 0.94f, 1f, 1f);
 
     private enum EncounterState
     {
@@ -86,6 +98,8 @@ public sealed class SpaceGameplayController : MonoBehaviour
     private Vector3 rocketStartPosition;
     private int rocketHealth = DefaultRocketHealth;
     private int remainingGateBlockers;
+    private bool victoryMessageDisplayed;
+    private float timeScaleBeforeVictory = 1f;
 
     /// <summary>
     /// Connects the controller to the active space scene systems.
@@ -194,9 +208,10 @@ public sealed class SpaceGameplayController : MonoBehaviour
         if (encounterRoutine != null)
         {
             StopCoroutine(encounterRoutine);
+            encounterRoutine = null;
         }
 
-        encounterRoutine = StartCoroutine(EscapeRoutine());
+        ShowVictoryMessageAndPause();
     }
 
     /// <summary>
@@ -428,6 +443,86 @@ public sealed class SpaceGameplayController : MonoBehaviour
             Destroy(regularAsteroids[i].gameObject);
         }
     }
+
+    private void ShowVictoryMessageAndPause()
+    {
+        if (victoryMessageDisplayed)
+        {
+            return;
+        }
+
+        victoryMessageDisplayed = true;
+        if (rocket != null)
+        {
+            rocket.DisableControl();
+        }
+
+        CreateVictoryMessageUI();
+        timeScaleBeforeVictory = Time.timeScale;
+        Time.timeScale = 0f;
+    }
+
+    private void CreateVictoryMessageUI()
+    {
+        GameObject canvasObject = new GameObject(
+            VictoryCanvasName,
+            typeof(RectTransform),
+            typeof(Canvas),
+            typeof(CanvasScaler),
+            typeof(GraphicRaycaster));
+        Canvas canvas = canvasObject.GetComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = VictoryCanvasSortingOrder;
+
+        CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(VictoryCanvasReferenceWidth, VictoryCanvasReferenceHeight);
+        scaler.matchWidthOrHeight = VictoryCanvasScaleMatch;
+
+        GameObject panelObject = new GameObject("VictoryPanel", typeof(RectTransform), typeof(Image));
+        panelObject.transform.SetParent(canvasObject.transform, false);
+        RectTransform panelRect = panelObject.GetComponent<RectTransform>();
+        panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+        panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+        panelRect.pivot = new Vector2(0.5f, 0.5f);
+        panelRect.anchoredPosition = Vector2.zero;
+        panelRect.sizeDelta = new Vector2(VictoryPanelWidth, VictoryPanelHeight);
+        Image panelImage = panelObject.GetComponent<Image>();
+        panelImage.color = VictoryPanelColor;
+        panelImage.raycastTarget = false;
+
+        GameObject messageObject = new GameObject("VictoryMessage", typeof(RectTransform), typeof(TextMeshProUGUI));
+        messageObject.transform.SetParent(panelObject.transform, false);
+        RectTransform messageRect = messageObject.GetComponent<RectTransform>();
+        messageRect.anchorMin = Vector2.zero;
+        messageRect.anchorMax = Vector2.one;
+        messageRect.offsetMin = new Vector2(28f, 20f);
+        messageRect.offsetMax = new Vector2(-28f, -20f);
+
+        TextMeshProUGUI message = messageObject.GetComponent<TextMeshProUGUI>();
+        message.text = VictoryMessage;
+        message.fontSize = VictoryMessageFontSize;
+        message.fontStyle = FontStyles.Bold;
+        message.color = VictoryMessageColor;
+        message.alignment = TextAlignmentOptions.Center;
+        message.enableAutoSizing = true;
+        message.fontSizeMin = 48f;
+        message.fontSizeMax = VictoryMessageFontSize;
+        message.raycastTarget = false;
+        if (TMP_Settings.defaultFontAsset != null)
+        {
+            message.font = TMP_Settings.defaultFontAsset;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (victoryMessageDisplayed)
+        {
+            Time.timeScale = timeScaleBeforeVictory;
+        }
+    }
+
 
     private IEnumerator EscapeRoutine()
     {

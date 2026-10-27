@@ -16,6 +16,9 @@ public class ElectricityPanelInteraction : MonoBehaviour
     [SerializeField] private GameObject puzzleUI;
     [SerializeField] private ElectricalCircuitPuzzle electricalCircuitPuzzle;
 
+    [Header("Puzzle Progression")]
+    [SerializeField] private PuzzleProgressionManager progressionManager;
+
     [Header("Player Control")]
     [SerializeField] private CharacterMover characterMover;
     [SerializeField] private MovePlayerInput movePlayerInput;
@@ -111,6 +114,10 @@ public class ElectricityPanelInteraction : MonoBehaviour
         puzzleOpen = false;
         SetPuzzleActive(false);
         SetPromptActive(interactionPrompt, false);
+        if (progressionManager != null)
+            progressionManager.ReportPuzzle2Completed();
+
+
         SetPlayerControl(true);
         SetCursorForPuzzle(false);
 

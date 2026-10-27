@@ -14,6 +14,9 @@ public class GeneratorController : MonoBehaviour
     [SerializeField] private CharacterMover characterMover;
     [SerializeField] private MovePlayerInput movePlayerInput;
 
+    [Header("Puzzle Progression")]
+    [SerializeField] private PuzzleProgressionManager progressionManager;
+
     private bool puzzleSolved = false;
 
     private void Start()
@@ -52,6 +55,9 @@ public class GeneratorController : MonoBehaviour
 
     public void PuzzleCompleted()
     {
+        if (puzzleSolved)
+            return;
+
         Debug.Log("=== PUZZLE COMPLETED CALLED ===");
 
         puzzleSolved = true;
@@ -99,6 +105,9 @@ public class GeneratorController : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        if (progressionManager != null)
+            progressionManager.ReportPuzzle1Completed();
 
         Debug.Log("=== GENERATOR POWER RESTORED ===");
     }

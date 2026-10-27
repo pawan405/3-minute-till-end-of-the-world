@@ -1,6 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using ithappy.Creative_Characters_FREE.Controller;
 
 [DisallowMultipleComponent]
@@ -10,6 +11,7 @@ public sealed class TorchInteraction : MonoBehaviour
     private const string PlayerTag = "Player";
     private const string HandBonePath = "Skeleton/Root/Hips/Spine/Spine1/RightShoulder/RightArm/RightForeArm/RightHand";
     private const float GrabAttachDelay = 0.65f;
+    private const float InteractionRange = 2.5f;
 
     [Header("Torch")]
     [SerializeField] private TorchController torchController;
@@ -37,6 +39,11 @@ public sealed class TorchInteraction : MonoBehaviour
     {
         interactionCollider = GetComponent<Collider>();
         interactionCollider.isTrigger = true;
+        GameObject playerObject = GameObject.FindGameObjectWithTag(PlayerTag);
+        if (playerObject != null)
+        {
+            nearbyCharacter = playerObject.GetComponent<CharacterMover>();
+        }
 
         if (torchController == null)
         {
@@ -58,12 +65,44 @@ public sealed class TorchInteraction : MonoBehaviour
 
     private void Update()
     {
-        if (!playerInRange || isGrabAnimating || isGrabbed || !Input.GetKeyDown(KeyCode.E))
+        if (isGrabbed || isGrabAnimating)
         {
             return;
         }
 
-        BeginGrab();
+        if (nearbyCharacter == null)
+        {
+            GameObject playerObject = GameObject.FindGameObjectWithTag(PlayerTag);
+            if (playerObject != null)
+            {
+                nearbyCharacter = playerObject.GetComponent<CharacterMover>();
+            }
+        }
+
+        bool wasInRange = playerInRange;
+        playerInRange = nearbyCharacter != null && Vector3.Distance(nearbyCharacter.transform.position, transform.position) <= InteractionRange;
+        if (playerInRange)
+        {
+            ShowGrabPrompt();
+        }
+        else if (wasInRange)
+        {
+            SetPromptVisible(false);
+        }
+
+        if (playerInRange && IsInteractPressed())
+        {
+            BeginGrab();
+        }
+    }
+
+    private static bool IsInteractPressed()
+    {
+        bool pressed = Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame;
+#if ENABLE_LEGACY_INPUT_MANAGER
+        pressed |= Input.GetKeyDown(KeyCode.E);
+#endif
+        return pressed;
     }
 
     private void OnTriggerEnter(Collider other)

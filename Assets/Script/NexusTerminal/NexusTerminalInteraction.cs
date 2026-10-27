@@ -12,6 +12,7 @@ public sealed class NexusTerminalInteraction : MonoBehaviour
 
     [SerializeField] private KeyCode interactionKey = KeyCode.E;
     [SerializeField] private LevelFlowController levelFlow;
+    [SerializeField] private FinalCodeTerminal finalCodeTerminal;
     [SerializeField] private bool autoLaunchOnInteract = true;
 
     [SerializeField] private KeyCode closeKey = KeyCode.Escape;
@@ -66,12 +67,18 @@ public sealed class NexusTerminalInteraction : MonoBehaviour
     /// </summary>
     public void OpenTerminal()
     {
-        if (!playerInRange || terminalRoot == null)
+        if (!playerInRange || (terminalRoot == null && finalCodeTerminal == null))
         {
             return;
         }
 
         SetPromptVisible(false);
+
+        if (finalCodeTerminal != null)
+        {
+            finalCodeTerminal.OpenTerminal();
+            return;
+        }
 
         if (autoLaunchOnInteract && levelFlow != null)
         {
@@ -99,6 +106,17 @@ public sealed class NexusTerminalInteraction : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+    }
+
+    /// <summary>
+    /// Restores the nearby-terminal prompt after the final-code keypad closes.
+    /// </summary>
+    public void OnFinalCodeTerminalClosed()
+    {
+        if (playerInRange)
+        {
+            SetPromptVisible(true);
+        }
     }
 
     /// <summary>
@@ -144,7 +162,9 @@ public sealed class NexusTerminalInteraction : MonoBehaviour
         }
 
         interactionPrompt.text = visible
-            ? (autoLaunchOnInteract ? $"PRESS [ {interactionKeyLabel} ] TO LAUNCH NEXUS-01" : $"PRESS [ {interactionKeyLabel} ] TO ACCESS NEXUS TERMINAL")
+            ? (finalCodeTerminal != null
+                ? $"PRESS [ {interactionKeyLabel} ] TO ENTER FINAL ACCESS CODE"
+                : (autoLaunchOnInteract ? $"PRESS [ {interactionKeyLabel} ] TO LAUNCH NEXUS-01" : $"PRESS [ {interactionKeyLabel} ] TO ACCESS NEXUS TERMINAL"))
             : string.Empty;
         interactionPrompt.gameObject.SetActive(visible);
     }
