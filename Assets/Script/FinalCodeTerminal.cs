@@ -190,6 +190,11 @@ public sealed class FinalCodeTerminal : MonoBehaviour
         }
 
         launchTriggered = true;
+        if (CountdownTimerSystem.Instance != null)
+        {
+            CountdownTimerSystem.Instance.MarkFinalAccessCodeAccepted();
+        }
+
         SetStatus(GrantedMessage, SuccessColor);
         terminalOpen = false;
         generatedCanvasRoot.SetActive(false);

@@ -211,7 +211,14 @@ public sealed class SpaceGameplayController : MonoBehaviour
             encounterRoutine = null;
         }
 
-        ShowVictoryMessageAndPause();
+        if (CountdownTimerSystem.Instance != null)
+        {
+            CountdownTimerSystem.Instance.CompleteGame();
+        }
+        else
+        {
+            ShowVictoryMessageAndPause();
+        }
     }
 
     /// <summary>

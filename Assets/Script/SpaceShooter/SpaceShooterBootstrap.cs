@@ -18,6 +18,7 @@ public sealed class SpaceShooterBootstrap : MonoBehaviour
 
     private void Start()
     {
+        CountdownTimerSystem.EnsureRunning();
         Time.timeScale = GameplayTimeScale;
         if (levelFlow == null || gameplayController == null)
         {
